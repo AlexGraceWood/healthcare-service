@@ -1,7 +1,6 @@
 package ru.netology.patient.service.medical;
 
 import java.math.BigDecimal;
-
 import ru.netology.patient.entity.BloodPressure;
 import ru.netology.patient.entity.PatientInfo;
 import ru.netology.patient.repository.PatientInfoRepository;
@@ -21,7 +20,7 @@ public class MedicalServiceImpl implements MedicalService {
     public void checkBloodPressure(String patientId, BloodPressure bloodPressure) {
         PatientInfo patientInfo = getPatientInfo(patientId);
         if (!patientInfo.getHealthInfo().getBloodPressure().equals(bloodPressure)) {
-            String message = String.format("Warning, patient with id: %s, need help", patientInfo.getId());
+            String message = String.format("Warning, patient with id: %s, need help", patientId);
             alertService.send(message);
         }
     }
@@ -29,8 +28,9 @@ public class MedicalServiceImpl implements MedicalService {
     @Override
     public void checkTemperature(String patientId, BigDecimal temperature) {
         PatientInfo patientInfo = getPatientInfo(patientId);
-        if (patientInfo.getHealthInfo().getNormalTemperature().subtract(new BigDecimal("1.5")).compareTo(temperature) > 0) {
-            String message = String.format("Warning, patient with id: %s, need help", patientInfo.getId());System.out.printf("Warning, patient with id: %s, need help", patientInfo.getId());
+        BigDecimal normalTemperature = patientInfo.getHealthInfo().getNormalTemperature();
+        if (temperature.compareTo(normalTemperature.add(new BigDecimal("1.5"))) > 0) {
+            String message = String.format("Warning, patient with id: %s, need help", patientId);
             alertService.send(message);
         }
     }
@@ -38,7 +38,7 @@ public class MedicalServiceImpl implements MedicalService {
     private PatientInfo getPatientInfo(String patientId) {
         PatientInfo patientInfo = patientInfoRepository.getById(patientId);
         if (patientInfo == null) {
-            throw new RuntimeException("Patient not found");
+            throw new IllegalArgumentException("Patient not found with id: " + patientId);
         }
         return patientInfo;
     }
